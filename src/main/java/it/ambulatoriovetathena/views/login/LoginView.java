@@ -13,10 +13,12 @@ import it.ambulatoriovetathena.views.main.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Tag("sa-login-view")
 @Route(value = LoginView.ROUTE)
@@ -28,7 +30,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     private LoginOverlay login = new LoginOverlay();
 
     @Autowired
-    public LoginView(AuthenticationManager authenticationManager,
+    public LoginView(DaoAuthenticationProvider daoAuthenticationProvider,
                      CustomRequestCache customRequestCache) {
         login.setAction("login");
         login.setOpened(true);
@@ -42,8 +44,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         //Login authentication
         login.addLoginListener(loginEvent -> {
            try {
+               password();
                // try to authenticate with given credentials, should always return !null or throw an {@link AuthenticationException}
-               final Authentication authentication = authenticationManager
+               final Authentication authentication = daoAuthenticationProvider
                        .authenticate(new UsernamePasswordAuthenticationToken(loginEvent.getUsername(),
                                loginEvent.getPassword()));
 
@@ -53,13 +56,19 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
                    UI.getCurrent().navigate(customRequestCache.resolveRedirectUrl());
-                   
+
                }
            } catch (AuthenticationException e) {
                e.printStackTrace();
                login.setError(true);
            }
         });
+    }
+
+    private void password() {
+        System.out.println("Username: user");
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        System.out.println("Password: " + bCryptPasswordEncoder.encode("password"));
     }
 
     @Override
