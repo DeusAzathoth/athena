@@ -49,6 +49,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
 
+        System.out.println("SecurityConfiguration - DaoAuthenticationProvider");
+
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
 
         daoAuthenticationProvider.setUserDetailsService(myUserDetailService);
@@ -59,11 +61,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public CustomRequestCache requestCache() {
+        System.out.println("SecurityConfiguration - CustomRequestCache");
         return new CustomRequestCache();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
+        System.out.println("SecurityConfiguration - config");
         authenticationManagerBuilder.authenticationProvider(daoAuthenticationProvider());
     }
 

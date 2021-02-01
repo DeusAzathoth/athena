@@ -43,11 +43,12 @@ public class MainView extends AppLayout {
 
     private final Tabs menu;
     private H1 viewTitle;
+    private Authentication authentication;
 
     public MainView() {
 
         //Roles
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             System.out.println("User: " + authentication.getName());
             Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>)authentication.getAuthorities();
@@ -93,7 +94,9 @@ public class MainView extends AppLayout {
         Button logout = new Button("Logout", buttonClickEvent -> {
             System.out.println("Logout");
             SecurityContextHolder.clearContext();
-            UI.getCurrent().getPage().open("j_spring_security_logout", null);
+            UI.getCurrent().getSession().close();
+            //UI.getCurrent().getPage().setLocation("www.google.it");
+            //UI.getCurrent().getPage().open("j_spring_security_logout", null);
         });
         layout.add(logoLayout, menu, logout);
         return layout;

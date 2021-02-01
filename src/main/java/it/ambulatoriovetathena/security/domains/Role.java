@@ -67,7 +67,7 @@ public class Role {
         return "Role{" +
                 "role_id=" + role_id +
                 ", role='" + role + '\'' +
-                ", user=" + user +
+                //", user=" + user +
                 '}';
     }
 
