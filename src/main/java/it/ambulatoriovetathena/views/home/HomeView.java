@@ -10,9 +10,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import it.ambulatoriovetathena.views.main.MainView;
 import com.vaadin.flow.router.RouteAlias;
+import org.springframework.security.access.annotation.Secured;
 
 @Route(value = "home", layout = MainView.class)
 @PageTitle("Home")
+@Secured("user")
 @CssImport("./styles/views/home/home-view.css")
 @RouteAlias(value = "", layout = MainView.class)
 public class HomeView extends HorizontalLayout {

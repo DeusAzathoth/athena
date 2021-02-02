@@ -11,6 +11,7 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -23,6 +24,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
+import it.ambulatoriovetathena.security.domains.User;
+import it.ambulatoriovetathena.security.services.SSUser;
 import it.ambulatoriovetathena.views.main.MainView;
 import it.ambulatoriovetathena.views.home.HomeView;
 import it.ambulatoriovetathena.views.impostazioni.ImpostazioniView;
@@ -43,12 +46,17 @@ public class MainView extends AppLayout {
 
     private final Tabs menu;
     private H1 viewTitle;
+    private UserMenu userMenu;
     private Authentication authentication;
+    private SSUser ssUser;
+    private User user;
 
     public MainView() {
 
-        //Roles
+        //User Details
         authentication = SecurityContextHolder.getContext().getAuthentication();
+        ssUser = (SSUser)authentication.getPrincipal();
+        user = ssUser.getUser();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             System.out.println("User: " + authentication.getName());
             Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>)authentication.getAuthorities();
@@ -74,7 +82,10 @@ public class MainView extends AppLayout {
         layout.add(new DrawerToggle());
         viewTitle = new H1();
         layout.add(viewTitle);
-        layout.add(new Image("images/user.svg", "Avatar"));
+        //layout.add(new Image("images/user.svg", "Avatar"));
+        userMenu = new UserMenu();
+        userMenu.getElement().getStyle().set("margin-left", "auto");
+        layout.add(userMenu);
         return layout;
     }
 
@@ -90,6 +101,8 @@ public class MainView extends AppLayout {
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new Image("images/logo.png", "Athena logo"));
         logoLayout.add(new H1("Athena"));
+        VerticalLayout welcome = new VerticalLayout();
+        welcome.add(new H2("Welcome " + user.getName()));
         // Logout
         Button logout = new Button("Logout", buttonClickEvent -> {
             System.out.println("Logout");
@@ -98,7 +111,7 @@ public class MainView extends AppLayout {
             //UI.getCurrent().getPage().setLocation("www.google.it");
             //UI.getCurrent().getPage().open("j_spring_security_logout", null);
         });
-        layout.add(logoLayout, menu, logout);
+        layout.add(logoLayout,welcome, menu, logout);
         return layout;
     }
 
@@ -112,7 +125,19 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Home", HomeView.class), createTab("Impostazioni", ImpostazioniView.class)};
+
+        // Create menu by role
+        if (ssUser.getAuthorities().stream().anyMatch(grantedAuthority ->
+                grantedAuthority.getAuthority().equals("admin"))) {
+            System.out.println("He's an administrator");
+            return new Tab[]{createTab("Home", HomeView.class),
+                    createTab("Impostazioni", ImpostazioniView.class)};
+        } else if (ssUser.getAuthorities().stream().anyMatch(grantedAuthority ->
+                grantedAuthority.getAuthority().equals("user"))) {
+            return new Tab[]{createTab("Home", HomeView.class)};
+        } else {
+            return null;
+        }
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
