@@ -22,7 +22,7 @@ public class User {
     // Lastname
     private String lastname;
     // Roles
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private Set<Role> roles = new HashSet<>();
 
@@ -30,6 +30,7 @@ public class User {
     }
 
     public User(String username, String email, String password, String name, String lastname) {
+        super();
         this.username = username;
         this.email = email;
         this.password = password;

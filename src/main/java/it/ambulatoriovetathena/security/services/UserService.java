@@ -1,26 +1,24 @@
 package it.ambulatoriovetathena.security.services;
 
 import it.ambulatoriovetathena.security.domains.User;
-import it.ambulatoriovetathena.security.repository.RoleRepository;
 import it.ambulatoriovetathena.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
     private UserRepository userRepository;
-    private RoleRepository roleRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public UserService(UserRepository userRepository,
-                       RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository) {
 
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        //this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 
     }
 
@@ -39,5 +37,23 @@ public class UserService {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
+
+    public List<User> findAllUser() {
+        return userRepository.findAll();
+    }
+
+    public void delete(User user) {
+        userRepository.delete(user);
+    }
+
+    /*
+    public List<User> fetchUsers(int offset, int limit) {
+        return userRepository.fetchUsers(offset, limit);
+    }
+
+    public int getUserCount() {
+        return userRepository.getUserCount();
+    }
+     */
 
 }

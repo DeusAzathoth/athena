@@ -12,13 +12,19 @@ public class Role {
     // Role
     private String role;
     // User
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     User user;
 
     public Role() {
     }
 
+    public Role(String role) {
+        super();
+        this.role = role;
+    }
+
     public Role(String role, User user) {
+        super();
         this.role = role;
         this.user = user;
     }
