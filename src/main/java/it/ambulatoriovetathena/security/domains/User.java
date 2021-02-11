@@ -22,7 +22,7 @@ public class User {
     // Lastname
     private String lastname;
     // Roles
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private Set<Role> roles = new HashSet<>();
 

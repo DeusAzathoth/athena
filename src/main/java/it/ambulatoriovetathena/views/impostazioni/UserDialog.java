@@ -6,6 +6,7 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -25,19 +26,29 @@ public class UserDialog extends Dialog {
 
     private FormLayout formLayout;
     private Binder<User> binder;
+    // Fields
+    private TextField username = new TextField();
+    private TextField name = new TextField();
+    private TextField lastname = new TextField();
+    private TextField email = new TextField();
+    private PasswordField passwordField = new PasswordField();
+    private PasswordField confirmPwd = new PasswordField();
 
     private User user;
     private UserService userService;
     private RoleService roleService;
+    private Grid<User> userGrid;
 
     public UserDialog(User user,
                       UserService userService,
-                      RoleService roleService) {
+                      RoleService roleService,
+                      Grid<User> userGrid) {
 
         // Injection
         this.user = user;
         this.userService = userService;
         this.roleService = roleService;
+        this.userGrid = userGrid;
 
         // Dialog
         this.setWidth("800px");
@@ -45,19 +56,20 @@ public class UserDialog extends Dialog {
         formLayout = new FormLayout();
         binder = new Binder<>();
 
-        // Fields
-        TextField username = new TextField();
-        TextField name = new TextField();
-        TextField lastname = new TextField();
-        TextField email = new TextField();
-        PasswordField passwordField = new PasswordField();
-        PasswordField confirmPwd = new PasswordField();
-
         // Roles
         CheckboxGroup<String> roles = new CheckboxGroup<>();
         //roles.setLabel("Ruoli");
         roles.setItems("admin", "user");
         roles.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+        roles.addValueChangeListener(checkboxGroupSetComponentValueChangeEvent -> {
+            System.out.println("Changed value");
+            Set<String> selected = checkboxGroupSetComponentValueChangeEvent.getValue();
+            for (String value : selected) {
+                if (value.equals("admin")) {
+                    roles.select("user");
+                }
+            }
+        });
         //add(roles);
 
         // Button
@@ -129,6 +141,7 @@ public class UserDialog extends Dialog {
                         }
                         try {
                             userService.saveUser(user);
+                            userGrid.setItems(userService.findAllUser());
                             this.close();
                         } catch (Exception e) {
                             e.getStackTrace();
@@ -150,6 +163,15 @@ public class UserDialog extends Dialog {
         formLayout.add(new HorizontalLayout(save, cancel));
 
         this.add(formLayout);
+
+        binder.readBean(user);
+
+    }
+
+    public void editMode() {
+
+        passwordField.setVisible(false);
+        confirmPwd.setVisible(false);
 
     }
 

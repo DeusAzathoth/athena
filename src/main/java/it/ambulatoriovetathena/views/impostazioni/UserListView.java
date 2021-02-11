@@ -5,7 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -16,7 +16,6 @@ import it.ambulatoriovetathena.security.domains.Role;
 import it.ambulatoriovetathena.security.domains.User;
 import it.ambulatoriovetathena.security.services.RoleService;
 import it.ambulatoriovetathena.security.services.UserService;
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 
 import java.util.Set;
 
@@ -24,6 +23,8 @@ public class UserListView extends VerticalLayout {
 
     private UserService userService;
     private RoleService roleService;
+
+    private Grid<User> userGrid;
 
     public UserListView(UserService userService,
                         RoleService roleService) {
@@ -37,20 +38,9 @@ public class UserListView extends VerticalLayout {
         setId("userlist-view");
 
         // Grid users
-        Grid<User> userGrid = new Grid<>();
-        /*
-        DataProvider<User, Void> dataProvider = DataProvider.fromCallbacks(query -> {
-            int offset = query.getOffset();
-            int limit = query.getLimit();
-            List<User> users = userService.fetchUsers(offset, limit);
-            return users.stream();
-        },
-                query -> userService.getUserCount());
-        */
+        userGrid = new Grid<>();
         userGrid.setItems(userService.findAllUser());
-        //userGrid.setDataProvider(dataProvider);
 
-        //userGrid.removeColumnByKey("user_id");
         userGrid.addColumn(User::getUsername)
                 .setHeader("Username");
         userGrid.addColumn(User::getLastname)
@@ -73,17 +63,17 @@ public class UserListView extends VerticalLayout {
                     return roles;
                 }))
                 .setHeader("Ruoli");
-
+        // Action column
         userGrid.addComponentColumn(item -> createActions(userGrid, item))
                 .setHeader("Azioni");
         userGrid.setWidthFull();
 
         // Add user
         HorizontalLayout addUsers = new HorizontalLayout();
-        H3 title = new H3("Lista degli utenti");
+        H4 title = new H4("Lista degli utenti");
         Button addUser = new Button(new Icon(VaadinIcon.PLUS), buttonClickEvent -> {
             System.out.println("Add user");
-            UserDialog userDialog = new UserDialog(new User(), userService, roleService);
+            UserDialog userDialog = new UserDialog(new User(), userService, roleService, userGrid);
             userDialog.open();
         });
         addUsers.add(title, addUser);
@@ -97,6 +87,14 @@ public class UserListView extends VerticalLayout {
         Div actions = new Div();
         Button edit = new Button(new Icon(VaadinIcon.EDIT), buttonClickEvent -> {
             System.out.println("Edit item");
+            UserDialog userDialog = new UserDialog(item, userService, roleService, userGrid);
+            userDialog.editMode();
+            userDialog.open();
+        });
+        Button resetPassword = new Button(new Icon(VaadinIcon.ERASER), event -> {
+            System.out.println("Reset password");
+            PasswordDialog passwordDialog = new PasswordDialog(item, userService);
+            passwordDialog.open();
         });
         Button delete = new Button(new Icon(VaadinIcon.CLOSE), buttonClickEvent -> {
             System.out.println("Delete item");
@@ -109,6 +107,7 @@ public class UserListView extends VerticalLayout {
             Button confirmButton = new Button("Conferma", event -> {
                 System.out.println("Confirmed!");
                 userService.delete(item);
+                userGrid.setItems(userService.findAllUser());
                 dialog.close();
             });
             Button cancelButton = new Button("Annulla", event -> {
@@ -120,7 +119,7 @@ public class UserListView extends VerticalLayout {
             dialog.add(body);
             dialog.open();
         });
-        actions.add(edit, delete);
+        actions.add(edit, resetPassword, delete);
         return actions;
     }
 
